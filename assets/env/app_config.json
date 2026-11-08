@@ -1,0 +1,10 @@
+{
+  "environment": "development",
+  "apiBaseUrl": "https://isg022-one-check-api-python.onrender.com",
+  "apiPrefix": "/api/v1",
+  "connectTimeoutMs": 20000,
+  "receiveTimeoutMs": 30000,
+  "enableOfflineSync": true,
+  "imageMaxWidth": 1600,
+  "imageQuality": 75
+}
