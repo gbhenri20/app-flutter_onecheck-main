@@ -13,9 +13,8 @@ final nomesVistoriadorProvider =
     FutureProvider.autoDispose<Map<String, String>>((ref) async {
   final role = ref.watch(authStateProvider).user?.role;
   if (role != UserRole.admin && role != UserRole.gestor) return {};
-  final page = await ref.watch(usuariosRepositoryProvider).listar(
+  final page = await ref.watch(usuariosRepositoryProvider).listarOperacionais(
         role: 'vistoriador',
-        porPagina: 100,
       );
   return {for (final user in page.items) user.id: user.nome};
 });

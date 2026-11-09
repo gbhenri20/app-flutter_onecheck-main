@@ -19,9 +19,9 @@ A navegação estreita usa barra inferior. A partir de 960 px, admin e gestor us
 | Detalhe do locatário | `/locatario/vistoria/:id` | locatário | Aceita, rejeita com motivo, baixa PDF |
 | Ocorrências | `/ocorrencias` | locatário, admin, gestor | Lista agregada pelos contratos visíveis |
 | Detalhe da ocorrência | `/ocorrencias/:id` | mesmo grupo | Status e linha do tempo (mudança só admin/gestor) |
-| Usuários | `/usuarios` | admin, gestor | CRUD lógico e MFA administrativo |
-| Auditoria | `/auditoria` | admin, gestor | `GET /logs` com filtro e paginação |
-| Histórico local | `/historico` | autenticado | Log do aparelho, não é a auditoria da API |
+| Usuários | `/usuarios` | admin | CRUD lógico e MFA administrativo. Gestor, vistoriador e locatário são redirecionados |
+| Auditoria | `/auditoria` | admin | `GET /logs` com filtro e paginação |
+| Histórico local | `/historico` | admin | Log do aparelho, não é a auditoria da API |
 | Perfil | `/perfil` | autenticado | Nome, senha, URL, fila offline, sair |
 | Menu | `/menu` | admin, gestor no celular | Atalhos |
 

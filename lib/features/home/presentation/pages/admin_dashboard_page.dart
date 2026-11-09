@@ -96,10 +96,11 @@ class AdminDashboardPage extends ConsumerWidget {
                       label: const Text('Contratos'),
                       onPressed: () => context.go('/contratos'),
                     ),
-                    ActionChip(
-                      label: const Text('Usuários'),
-                      onPressed: () => context.go('/usuarios'),
-                    ),
+                    if (isAdmin)
+                      ActionChip(
+                        label: const Text('Usuários'),
+                        onPressed: () => context.go('/usuarios'),
+                      ),
                     if (isAdmin)
                       ActionChip(
                         label: const Text('Auditoria'),

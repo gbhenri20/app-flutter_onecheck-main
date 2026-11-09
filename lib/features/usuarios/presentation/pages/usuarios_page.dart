@@ -25,6 +25,16 @@ class _UsuariosPageState extends ConsumerState<UsuariosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = ref.watch(authStateProvider).user?.isAdmin == true;
+    if (!isAdmin) {
+      return const Scaffold(
+        body: OcEmptyState(
+          title: 'Acesso restrito',
+          subtitle: 'Somente o administrador gerencia contas.',
+          icon: Icons.lock_outline,
+        ),
+      );
+    }
     final async = ref.watch(usuariosProvider(_role));
     return Scaffold(
       appBar: AppBar(

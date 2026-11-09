@@ -50,14 +50,15 @@ A API também tem `GET /auth/mfa/setup`, `POST /auth/mfa/activate`, `POST /auth/
 | `POST /usuarios/me/mfa/setup` | não usado | autenticado | Setup do próprio usuário depois do login não tem tela |
 | `POST /usuarios/me/mfa/enable` | não usado | autenticado | Corpo `{ "secret", "codigo" }` |
 | `DELETE /usuarios/me/mfa` | não usado | autenticado | Desliga o próprio MFA |
-| `GET /usuarios` | implementado | autenticado | `pagina`, `por_pagina`, `role` |
-| `POST /usuarios` | implementado | admin, gestor | `{ nome, email, senha, role, cpf? }` |
-| `GET /usuarios/{id}` | implementado no repositório | admin, gestor | A lista já traz o necessário; a tela não abre um detalhe separado |
-| `PUT /usuarios/{id}` | implementado | admin, gestor | nome, email, role, senha, mfa_enabled |
-| `DELETE /usuarios/{id}` | implementado | admin, gestor | Exclusão lógica. Não desativa a própria conta |
-| `POST /usuarios/{id}/mfa/setup` | implementado | admin, gestor | Devolve o segredo |
-| `POST /usuarios/{id}/mfa/habilitar` | implementado | admin, gestor | Sem corpo, ou `{ secret, codigo }` |
-| `POST /usuarios/{id}/mfa/desabilitar` | implementado | admin, gestor | Zera segredo e flag |
+| `GET /usuarios` | implementado | admin | `pagina`, `por_pagina`, `role`. Inclui e-mail, CPF e MFA |
+| `GET /usuarios/resumo` | implementado | admin, gestor | `role=vistoriador` ou `role=locatario`. Devolve só `id`, `nome` e `role` |
+| `POST /usuarios` | implementado | admin | `{ nome, email, senha, role, cpf? }` |
+| `GET /usuarios/{id}` | implementado no repositório | admin | A lista já traz o necessário; a tela não abre um detalhe separado |
+| `PUT /usuarios/{id}` | implementado | admin | nome, email, role, senha, mfa_enabled |
+| `DELETE /usuarios/{id}` | implementado | admin | Exclusão lógica. Não desativa a própria conta |
+| `POST /usuarios/{id}/mfa/setup` | implementado | admin | Devolve o segredo |
+| `POST /usuarios/{id}/mfa/habilitar` | implementado | admin | Sem corpo, ou `{ secret, codigo }` |
+| `POST /usuarios/{id}/mfa/desabilitar` | implementado | admin | Zera segredo e flag |
 
 ## Imóveis
 
@@ -135,8 +136,8 @@ Não existe `GET /agendamentos`.
 
 | Método e URL | Uso | Quem |
 | --- | --- | --- |
-| `GET /dashboard` | implementado | autenticado |
-| `GET /logs` | implementado | admin, gestor. Query `pagina`, `por_pagina`, `acao`, `entidade`, `usuario_id`, `de`, `ate` |
+| `GET /dashboard` | implementado | admin, gestor. Locatário e vistoriador recebem 403 |
+| `GET /logs` | implementado | admin. Query `pagina`, `por_pagina`, `acao`, `entidade`, `usuario_id`, `de`, `ate`. Gestor, vistoriador e locatário recebem 403 |
 | `GET /health` | implementado | público. Usado ao salvar a URL |
 | `GET /uploads/{arquivo}` | implementado | público na API. O app só monta a URL da foto |
 | `GET /` | não usado | raiz do serviço |

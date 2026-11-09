@@ -2,6 +2,7 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/network/paged.dart';
 import '../../auth/domain/user.dart';
 import '../domain/mfa_admin.dart';
+import '../domain/usuario_operacional.dart';
 
 class UsuariosRepository {
   UsuariosRepository(this._client);
@@ -20,6 +21,24 @@ class UsuariosRepository {
         if (role != null && role.isNotEmpty) 'role': role,
       },
       parser: (raw) => parseList(raw, User.fromJson),
+    );
+    return pageFrom(res);
+  }
+
+  /// Nomes de vistoriadores ou locatários para a operação. Não traz e-mail, CPF nem MFA.
+  Future<PageResult<UsuarioOperacional>> listarOperacionais({
+    int pagina = 1,
+    int porPagina = 100,
+    required String role,
+  }) async {
+    final res = await _client.get<List<UsuarioOperacional>>(
+      '/usuarios/resumo',
+      query: {
+        'pagina': pagina,
+        'por_pagina': porPagina,
+        'role': role,
+      },
+      parser: (raw) => parseList(raw, UsuarioOperacional.fromJson),
     );
     return pageFrom(res);
   }

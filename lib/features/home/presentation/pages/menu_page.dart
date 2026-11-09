@@ -15,7 +15,8 @@ class MenuPage extends ConsumerWidget {
     final items = <(String, String, IconData)>[
       ('/agenda', 'Agenda de vistorias', Icons.calendar_month_outlined),
       ('/ocorrencias', 'Ocorrências', Icons.report_problem_outlined),
-      ('/usuarios', 'Usuários', Icons.group_outlined),
+      if (role == UserRole.admin)
+        ('/usuarios', 'Usuários', Icons.group_outlined),
       if (role == UserRole.admin)
         ('/auditoria', 'Auditoria', Icons.fact_check_outlined),
       if (role == UserRole.admin)

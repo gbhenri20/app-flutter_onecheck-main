@@ -117,7 +117,6 @@ class HomeShell extends ConsumerWidget {
           _NavDest('/contratos', 'Contratos', Icons.description_outlined),
           _NavDest('/agenda', 'Agenda', Icons.calendar_month_outlined),
           _NavDest('/ocorrencias', 'Ocorrências', Icons.report_problem_outlined),
-          _NavDest('/usuarios', 'Usuários', Icons.group_outlined),
           _NavDest('/perfil', 'Perfil', Icons.person_outline),
         ];
       default:

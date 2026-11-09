@@ -6,8 +6,8 @@ import '../../../../app/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
-import '../../../auth/domain/user.dart';
 import '../../../checklist/domain/checklist_models.dart';
+import '../../../usuarios/domain/usuario_operacional.dart';
 
 class ContratoDetalhePage extends ConsumerWidget {
   const ContratoDetalhePage({super.key, required this.contratoId});
@@ -305,8 +305,7 @@ class ContratoDetalhePage extends ConsumerWidget {
   Future<void> _checklist(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    final vistoriadores = await ref.read(usuariosRepositoryProvider).listar(
-          porPagina: 100,
+    final vistoriadores = await ref.read(usuariosRepositoryProvider).listarOperacionais(
           role: 'vistoriador',
         );
     if (!navigator.mounted) return;
@@ -316,7 +315,7 @@ class ContratoDetalhePage extends ConsumerWidget {
       );
       return;
     }
-    User? vistoriador = vistoriadores.items.first;
+    UsuarioOperacional? vistoriador = vistoriadores.items.first;
     var tipo = 'inicial';
     final ok = await showDialog<bool>(
       context: navigator.context,
@@ -335,7 +334,7 @@ class ContratoDetalhePage extends ConsumerWidget {
                 ],
                 onChanged: (value) => setLocal(() => tipo = value ?? 'inicial'),
               ),
-              DropdownButtonFormField<User>(
+              DropdownButtonFormField<UsuarioOperacional>(
                 key: ValueKey(vistoriador?.id),
                 initialValue: vistoriador,
                 items: [

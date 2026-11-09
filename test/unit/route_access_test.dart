@@ -14,7 +14,12 @@ void main() {
   test('usuário comum não entra no menu administrativo', () {
     expect(routeAllowed(UserRole.locatario, '/menu'), isFalse);
     expect(routeAllowed(UserRole.vistoriador, '/usuarios'), isFalse);
+    expect(routeAllowed(UserRole.gestor, '/usuarios'), isFalse);
+    expect(routeAllowed(UserRole.locatario, '/usuarios'), isFalse);
+    expect(routeAllowed(UserRole.admin, '/usuarios'), isTrue);
     expect(routeAllowed(UserRole.gestor, '/imoveis'), isTrue);
+    expect(routeAllowed(UserRole.gestor, '/agenda'), isTrue);
+    expect(routeAllowed(UserRole.gestor, '/contratos'), isTrue);
     expect(routeAllowed(UserRole.gestor, '/auditoria'), isFalse);
     expect(routeAllowed(UserRole.locatario, '/ocorrencias'), isTrue);
     expect(homeForRole(UserRole.admin), '/admin');

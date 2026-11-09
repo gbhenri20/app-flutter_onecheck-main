@@ -7,6 +7,11 @@ bool isLogRoute(String location) {
       location.startsWith('/auditoria/');
 }
 
+/// Cadastro, edição, desativação e MFA de contas.
+bool isUserAdminRoute(String location) {
+  return location == '/usuarios' || location.startsWith('/usuarios/');
+}
+
 String homeForRole(UserRole? role) {
   switch (role) {
     case UserRole.vistoriador:
@@ -50,7 +55,9 @@ String? redirectForSession({
 }
 
 bool routeAllowed(UserRole? role, String location) {
-  if (isLogRoute(location)) return role == UserRole.admin;
+  if (isLogRoute(location) || isUserAdminRoute(location)) {
+    return role == UserRole.admin;
+  }
   if (location == '/' || location == '/perfil') return true;
   if (location == '/menu') {
     return role == UserRole.admin || role == UserRole.gestor;

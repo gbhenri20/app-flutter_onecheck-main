@@ -71,7 +71,7 @@ API REST de alta performance para o ecossistema **OneCheck** — gestão complet
 | Role | Permissões Principais |
 |---|---|
 | `admin` | Acesso administrativo completo a todas as entidades, logs, relatórios e métricas. |
-| `gestor` | Gestão operacional de imóveis, contratos, checklists e atendimento a problemas. |
+| `gestor` | Gestão operacional de imóveis, contratos, checklists e atendimento a problemas. Sem contas, MFA de terceiros ou auditoria. |
 | `vistoriador` | Execução técnica e submissão de checklists de vistorias agendadas. |
 | `locatario` | Consulta exclusiva dos seus próprios imóveis/contratos, aceite de vistoria e abertura de problemas. |
 
@@ -99,11 +99,12 @@ POST   /api/v1/auth/mfa/desabilitar        # Auto-desabilitação de MFA
 GET    /api/v1/usuarios/me                 # Dados do usuário logado
 PATCH  /api/v1/usuarios/me                 # Atualizar dados próprios
 PUT    /api/v1/usuarios/me/senha           # Alteração de senha
-GET    /api/v1/usuarios                    # Listar usuários (admin/gestor)
+GET    /api/v1/usuarios                    # Listar usuários (admin)
+GET    /api/v1/usuarios/resumo             # Nomes de vistoriador/locatário (admin/gestor)
 POST   /api/v1/usuarios                    # Criar usuário (admin)
-GET    /api/v1/usuarios/{id}               # Detalhes de usuário
-PUT    /api/v1/usuarios/{id}               # Atualizar usuário
-DELETE /api/v1/usuarios/{id}               # Exclusão lógica (soft delete)
+GET    /api/v1/usuarios/{id}               # Detalhes de usuário (admin)
+PUT    /api/v1/usuarios/{id}               # Atualizar usuário (admin)
+DELETE /api/v1/usuarios/{id}               # Exclusão lógica (admin)
 POST   /api/v1/usuarios/{id}/mfa/habilitar # Habilitar MFA de usuário (admin)
 POST   /api/v1/usuarios/{id}/mfa/desabilitar # Desabilitar MFA de usuário (admin)
 ```
@@ -166,7 +167,7 @@ POST   /api/v1/problemas/{id}/atualizacoes # Adicionar atualização com foto
 ### 📊 Dashboard, Logs & Sistema
 ```http
 GET    /api/v1/dashboard                   # Métricas consolidadas em tempo real
-GET    /api/v1/logs                        # Logs de auditoria (com filtros e paginação)
+GET    /api/v1/logs                        # Logs de auditoria (admin)
 GET    /api/v1/health                      # Health check da API
 GET    /api/v1/uploads/{filename}          # Servir arquivos estáticos/fotos
 ```

@@ -7,8 +7,8 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/paged.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
-import '../../../auth/domain/user.dart';
 import '../../../checklist/domain/checklist_models.dart';
+import '../../../usuarios/domain/usuario_operacional.dart';
 
 final contratosProvider =
     FutureProvider.autoDispose<PageResult<Contrato>>((ref) {
@@ -83,8 +83,7 @@ class ContratosPage extends ConsumerWidget {
             porPagina: 100,
             status: 'disponivel',
           );
-      final locatarios = await ref.read(usuariosRepositoryProvider).listar(
-            porPagina: 100,
+      final locatarios = await ref.read(usuariosRepositoryProvider).listarOperacionais(
             role: 'locatario',
           );
       if (!navigator.mounted) return;
@@ -97,7 +96,7 @@ class ContratosPage extends ConsumerWidget {
         return;
       }
       Imovel? imovel = imoveis.items.first;
-      User? locatario = locatarios.items.first;
+      UsuarioOperacional? locatario = locatarios.items.first;
       final inicio = TextEditingController();
       final fim = TextEditingController();
       final valor = TextEditingController();
@@ -121,7 +120,7 @@ class ContratosPage extends ConsumerWidget {
                     onChanged: (value) => setLocal(() => imovel = value),
                     decoration: const InputDecoration(labelText: 'Imóvel disponível'),
                   ),
-                  DropdownButtonFormField<User>(
+                  DropdownButtonFormField<UsuarioOperacional>(
                     key: ValueKey(locatario?.id),
                     initialValue: locatario,
                     items: [
