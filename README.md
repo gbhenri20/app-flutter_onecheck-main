@@ -9,7 +9,7 @@ Aplicativo Flutter para vistorias imobiliárias, integrado à API REST OneCheck.
 
 ## Configuração da URL da API
 
-O asset de desenvolvimento continua em `assets/env/app_config.json`. No login e no Perfil é possível gravar outra URL, sem recompilar.
+A API publicada é `https://isg022-one-check-api-python.onrender.com`. Esse endereço já está em `assets/env/app_config.json`, sem a barra no final e sem o prefixo `/api/v1`. O aplicativo acrescenta o prefixo sozinho.
 
 ## Instalação
 
@@ -41,7 +41,7 @@ Edite um único arquivo:
 // assets/env/app_config.json
 {
   "environment": "development",
-  "apiBaseUrl": "http://127.0.0.1:8765",
+  "apiBaseUrl": "https://isg022-one-check-api-python.onrender.com",
   "apiPrefix": "/api/v1",
   ...
 }
@@ -49,10 +49,10 @@ Edite um único arquivo:
 
 | Ambiente | Exemplo `apiBaseUrl` |
 |----------|----------------------|
+| API publicada | `https://isg022-one-check-api-python.onrender.com` |
 | Desenvolvimento local | `http://127.0.0.1:8765` |
 | Emulador Android → host | `http://10.0.2.2:8765` |
 | Dispositivo físico | IP da máquina na LAN |
-| Produção/Render | URL HTTPS pública da API |
 
 Modelo sem segredos: `assets/env/app_config.example.json`.
 
@@ -79,7 +79,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8765
 ```
 
-Documentação Swagger: `http://127.0.0.1:8765/docs`
+Documentação Swagger da API publicada: `https://isg022-one-check-api-python.onrender.com/docs`
 
 ## Contas de demonstração (seed da API)
 
@@ -123,6 +123,7 @@ lib/
 
 ## Documentação adicional
 
+- [Documento do projeto](docs/PROJETO.md)
 - [Diagnóstico da API e limitações](docs/DIAGNOSTICO_API.md)
 - [README original da API](docs/api-reference/README.md)
 
@@ -139,5 +140,5 @@ Cobertura crítica: login/MFA, modelos de checklist, renovação de sessão (moc
 
 - O app **não** reimplementa TOTP localmente; a validação é sempre da API.
 - Não há endpoint global de agenda: a lista é agregada via contratos/checklists.
-- Vistorias de `encerramento` ficam ocultas na agenda principal do vistoriador.
+- A agenda mostra entrada, saída e manutenção, com busca e filtros.
 - Após submissão (`pendente_aceite` / `aceito` / `rejeitado`), a API bloqueia edição.

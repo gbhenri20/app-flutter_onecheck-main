@@ -67,6 +67,7 @@ web/              index.html do build web
 
 ## Documentação
 
+- [PROJETO.md](PROJETO.md)
 - [ARQUITETURA.md](ARQUITETURA.md)
 - [INTEGRACAO_API.md](INTEGRACAO_API.md)
 - [ENDPOINTS.md](ENDPOINTS.md)
