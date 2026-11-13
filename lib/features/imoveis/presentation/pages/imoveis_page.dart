@@ -187,9 +187,10 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
           ),
           FilledButton(
             onPressed: () async {
+              final nav = Navigator.of(ctx);
               final cepOk = await cepKey.currentState?.garantir() ?? false;
-              if (!cepOk || !ctx.mounted) return;
-              if (formKey.currentState!.validate()) Navigator.pop(ctx, true);
+              if (!cepOk || !nav.mounted) return;
+              if (formKey.currentState!.validate()) nav.pop(true);
             },
             child: const Text('Salvar'),
           ),

@@ -152,9 +152,10 @@ class ImovelDetalhePage extends ConsumerWidget {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           FilledButton(
             onPressed: () async {
+              final nav = Navigator.of(ctx);
               final cepOk = await cepKey.currentState?.garantir() ?? false;
-              if (!cepOk || !ctx.mounted) return;
-              Navigator.pop(ctx, true);
+              if (!cepOk || !nav.mounted) return;
+              nav.pop(true);
             },
             child: const Text('Salvar'),
           ),

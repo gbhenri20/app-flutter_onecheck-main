@@ -9,7 +9,6 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../checklist/domain/checklist_models.dart';
 import '../../../usuarios/domain/usuario_operacional.dart';
-import '../../data/contrato_pdf.dart';
 
 class ContratoDetalhePage extends ConsumerWidget {
   const ContratoDetalhePage({super.key, required this.contratoId});
@@ -44,9 +43,9 @@ class ContratoDetalhePage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () => _baixarDocumento(context, ref, contrato),
+              onPressed: () => _baixarDoContrato(context, ref),
               icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('Baixar contrato'),
+              label: const Text('Baixar laudo'),
             ),
             if (canManage && contrato.status == 'ativo') ...[
               const SizedBox(height: 12),
@@ -80,9 +79,11 @@ class ContratoDetalhePage extends ConsumerWidget {
                   ),
               ],
             ),
-            const Text(
-              'A API não tem status no agendamento. Cancelar remove o registro. '
-              'Não existe GET /agendamentos global: a lista é deste contrato.',
+            Text(
+              canManage
+                  ? 'Toque no horário para alterar. O ícone cancela a visita.'
+                  : 'Vistorias marcadas neste contrato.',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
             agendaAsync.when(
@@ -160,7 +161,15 @@ class ContratoDetalhePage extends ConsumerWidget {
                         contentPadding: EdgeInsets.zero,
                         title: Text(labelTipoVistoria(ck.tipo)),
                         subtitle: Text(labelChecklistStatus(ck.status)),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: IconButton(
+                          tooltip: 'Baixar laudo',
+                          icon: const Icon(Icons.picture_as_pdf_outlined),
+                          onPressed: () => _baixarLaudo(
+                            ScaffoldMessenger.of(context),
+                            ref,
+                            ck,
+                          ),
+                        ),
                         onTap: () => context.push(
                           ck.podeEditar ? '/vistoria/${ck.id}' : '/vistoria/${ck.id}/revisao',
                         ),
@@ -183,106 +192,72 @@ class ContratoDetalhePage extends ConsumerWidget {
     ];
   }
 
-  Future<void> _baixarDocumento(
-    BuildContext context,
-    WidgetRef ref,
-    Contrato contrato,
-  ) async {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(
-        child: Card(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
-                Text('Gerando contrato...'),
-              ],
+  Future<void> _baixarDoContrato(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      final items = await ref.read(_checksProvider(contratoId).future);
+      if (!navigator.mounted) return;
+      if (items.isEmpty) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'A API só gera o PDF quando existe uma vistoria neste contrato.',
+            ),
+          ),
+        );
+        return;
+      }
+      if (items.length == 1) {
+        await _baixarLaudo(messenger, ref, items.first);
+        return;
+      }
+      final escolhido = await navigator.push<Checklist>(
+        RawDialogRoute<Checklist>(
+          pageBuilder: (ctx, animation, secondaryAnimation) => FadeTransition(
+            opacity: animation,
+            child: FadeTransition(
+              opacity: ReverseAnimation(secondaryAnimation),
+              child: SimpleDialog(
+                title: const Text('Qual laudo baixar?'),
+                children: [
+                  for (final ck in items)
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, ck),
+                      child: Text(
+                        '${labelTipoVistoria(ck.tipo)} · ${labelChecklistStatus(ck.status)}',
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-
-    try {
-      final imovel = await ref.read(imoveisRepositoryProvider).obter(contrato.imovelId);
-      final locatario = await _locatario(ref, contrato.locatarioId);
-      final bytes = await gerarContratoPdf(
-        DadosContratoDocumento(
-          numero: contrato.id,
-          status: contrato.status,
-          nomeLocatario: locatario.nome,
-          cpfLocatario: locatario.cpf,
-          imovelNome: imovel.nomeExibicao,
-          imovelTipo: imovel.tipo,
-          imovelTamanho: imovel.tamanho,
-          garagem: imovel.garagem,
-          garagemVagas: imovel.garagemVagas,
-          endereco: imovel.endereco,
-          dataInicio: contrato.dataInicio,
-          dataFim: contrato.dataFim,
-          valorMensal: contrato.valorMensal,
-          emitidoEm: DateTime.now(),
-        ),
       );
-      final prefixo = contrato.id.length <= 8 ? contrato.id : contrato.id.substring(0, 8);
-      await saveBytes(
-        bytes: bytes,
-        filename: 'contrato-$prefixo.pdf',
-        mimeType: 'application/pdf',
-      );
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Contrato baixado.')),
-        );
-      }
+      if (escolhido == null || !navigator.mounted) return;
+      await _baixarLaudo(messenger, ref, escolhido);
     } on AppException catch (e) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível gerar o contrato.')),
-        );
-      }
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
-  Future<({String nome, String? cpf})> _locatario(WidgetRef ref, String id) async {
-    var nome = 'Locatário do contrato';
-    String? cpf;
+  Future<void> _baixarLaudo(
+    ScaffoldMessengerState messenger,
+    WidgetRef ref,
+    Checklist ck,
+  ) async {
     try {
-      final repo = ref.read(usuariosRepositoryProvider);
-      for (var pagina = 1; pagina <= 5; pagina++) {
-        final page = await repo.listarOperacionais(
-          pagina: pagina,
-          porPagina: 100,
-          role: 'locatario',
-        );
-        for (final usuario in page.items) {
-          if (usuario.id == id && usuario.nome.trim().isNotEmpty) {
-            nome = usuario.nome.trim();
-          }
-        }
-        if (!page.hasMore) break;
-      }
-      if (ref.read(authStateProvider).user?.isAdmin == true) {
-        final completo = await repo.obter(id);
-        if (completo.nome.trim().isNotEmpty) nome = completo.nome.trim();
-        cpf = completo.cpf;
-      }
-    } on AppException {
-      // O PDF segue com o nome que já tiver sido encontrado.
+      final bytes = await ref.read(checklistRepositoryProvider).baixarPdf(ck.id);
+      final prefixo = ck.id.length <= 8 ? ck.id : ck.id.substring(0, 8);
+      await saveBytes(
+        bytes: bytes,
+        filename: 'laudo-$prefixo.pdf',
+        mimeType: 'application/pdf',
+      );
+      messenger.showSnackBar(const SnackBar(content: Text('Laudo baixado.')));
+    } on AppException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
-    return (nome: nome, cpf: cpf);
   }
 
   Future<void> _acao(BuildContext context, WidgetRef ref, {required bool encerrar}) async {

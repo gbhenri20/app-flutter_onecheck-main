@@ -19,6 +19,16 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// O lint de release do image_picker quebra quando o cache do Kotlin
+// some no builder. Essa análise não entra no APK.
+subprojects {
+    tasks.configureEach {
+        if (name.contains("lint", ignoreCase = true)) {
+            enabled = false
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

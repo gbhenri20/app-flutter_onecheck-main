@@ -49,9 +49,13 @@ enum CepConferencia { confere, diverge, invalido, semCep, indisponivel }
 
 /// Oito dígitos, ou null quando o texto não é um CEP.
 String? normalizarCep(String valor) {
-  final digitos = valor.replaceAll(RegExp(r'\D'), '');
-  if (digitos.length != 8) return null;
-  return digitos;
+  final digitos = StringBuffer();
+  for (final code in valor.codeUnits) {
+    if (code >= 0x30 && code <= 0x39) digitos.writeCharCode(code);
+  }
+  final texto = digitos.toString();
+  if (texto.length != 8) return null;
+  return texto;
 }
 
 String _semAcento(String valor) {
@@ -61,7 +65,25 @@ String _semAcento(String valor) {
   for (var i = 0; i < origem.length; i++) {
     texto = texto.replaceAll(origem[i], destino[i]);
   }
-  return texto.replaceAll(RegExp(r'\s+'), ' ');
+  return _colapsarEspacos(texto);
+}
+
+String _colapsarEspacos(String valor) {
+  final partes = <String>[];
+  final atual = StringBuffer();
+  for (final rune in valor.runes) {
+    final char = String.fromCharCode(rune);
+    if (char.trim().isEmpty) {
+      if (atual.isNotEmpty) {
+        partes.add(atual.toString());
+        atual.clear();
+      }
+    } else {
+      atual.write(char);
+    }
+  }
+  if (atual.isNotEmpty) partes.add(atual.toString());
+  return partes.join(' ');
 }
 
 bool _equivale(String? atual, String referencia) {
