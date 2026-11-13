@@ -7,6 +7,8 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/paged.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/cep_field.dart';
+import '../../../../core/widgets/endereco_mapa.dart';
 import '../../../checklist/domain/checklist_models.dart';
 
 final imoveisProvider = FutureProvider.autoDispose
@@ -86,6 +88,9 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
                       '${imovel.tipo ?? '—'} · ${labelImovelStatus(imovel.status)}\n'
                       '${imovel.endereco?.linhaCompleta ?? 'Sem endereço'}',
                   trailing: const Icon(Icons.chevron_right),
+                  footer: imovel.endereco != null && imovel.endereco!.temLocalizacao
+                      ? LocalizacaoPainel(endereco: imovel.endereco!)
+                      : null,
                   onTap: () => context.push('/imoveis/${imovel.id}'),
                 ),
               );
@@ -105,7 +110,9 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
     final cidade = TextEditingController();
     final estado = TextEditingController();
     final cep = TextEditingController();
+    final bairro = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    final cepKey = GlobalKey<CepFieldState>();
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -132,6 +139,15 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
                     controller: codigo,
                     decoration: const InputDecoration(labelText: 'Código'),
                   ),
+                  CepField(
+                    key: cepKey,
+                    cep: cep,
+                    rua: rua,
+                    bairro: bairro,
+                    cidade: cidade,
+                    estado: estado,
+                    numero: numero,
+                  ),
                   TextFormField(
                     controller: rua,
                     decoration: const InputDecoration(labelText: 'Rua'),
@@ -141,6 +157,10 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
                   TextFormField(
                     controller: numero,
                     decoration: const InputDecoration(labelText: 'Número'),
+                  ),
+                  TextFormField(
+                    controller: bairro,
+                    decoration: const InputDecoration(labelText: 'Bairro'),
                   ),
                   TextFormField(
                     controller: cidade,
@@ -155,10 +175,6 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
                     validator: (v) =>
                         v == null || v.trim().length < 2 ? 'Informe a UF' : null,
                   ),
-                  TextFormField(
-                    controller: cep,
-                    decoration: const InputDecoration(labelText: 'CEP'),
-                  ),
                 ],
               ),
             ),
@@ -170,7 +186,9 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
+              final cepOk = await cepKey.currentState?.garantir() ?? false;
+              if (!cepOk || !ctx.mounted) return;
               if (formKey.currentState!.validate()) Navigator.pop(ctx, true);
             },
             child: const Text('Salvar'),
@@ -179,7 +197,17 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
       ),
     );
     if (ok != true || !mounted) {
-      _disposeControllers([tipo, titulo, codigo, rua, numero, cidade, estado, cep]);
+      _disposeControllers([
+        tipo,
+        titulo,
+        codigo,
+        rua,
+        numero,
+        bairro,
+        cidade,
+        estado,
+        cep,
+      ]);
       return;
     }
     try {
@@ -191,6 +219,7 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
         'endereco': {
           'rua': rua.text.trim(),
           if (numero.text.trim().isNotEmpty) 'numero': numero.text.trim(),
+          if (bairro.text.trim().isNotEmpty) 'bairro': bairro.text.trim(),
           'cidade': cidade.text.trim(),
           'estado': estado.text.trim(),
           if (cep.text.trim().isNotEmpty) 'cep': cep.text.trim(),
@@ -207,7 +236,17 @@ class _ImoveisPageState extends ConsumerState<ImoveisPage> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
-      _disposeControllers([tipo, titulo, codigo, rua, numero, cidade, estado, cep]);
+      _disposeControllers([
+        tipo,
+        titulo,
+        codigo,
+        rua,
+        numero,
+        bairro,
+        cidade,
+        estado,
+        cep,
+      ]);
     }
   }
 

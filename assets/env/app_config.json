@@ -1,6 +1,6 @@
 {
   "environment": "development",
-  "apiBaseUrl": "https://isg022-one-check-api-python.onrender.com",
+  "apiBaseUrl": "https://onecheck-api-srgh.onrender.com",
   "apiPrefix": "/api/v1",
   "connectTimeoutMs": 20000,
   "receiveTimeoutMs": 30000,

@@ -5,6 +5,8 @@ import '../../../../app/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/cep_field.dart';
+import '../../../../core/widgets/endereco_mapa.dart';
 import '../../../checklist/domain/checklist_models.dart';
 
 class ImovelDetalhePage extends ConsumerWidget {
@@ -40,10 +42,18 @@ class ImovelDetalhePage extends ConsumerWidget {
             Text('Endereço', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(imovel.endereco?.linhaCompleta ?? 'Endereço não cadastrado'),
-            if (imovel.endereco?.latitude != null)
-              Text(
-                'Coordenadas: ${imovel.endereco!.latitude}, ${imovel.endereco!.longitude}',
+            if (imovel.endereco?.cep?.isNotEmpty == true)
+              Text('CEP ${imovel.endereco!.cep}'),
+            if (imovel.endereco != null && imovel.endereco!.temLocalizacao) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: LocalizacaoPainel(
+                  endereco: imovel.endereco!,
+                  altura: 220,
+                ),
               ),
+            ],
             if (canManage) ...[
               const SizedBox(height: 8),
               OutlinedButton.icon(
@@ -112,6 +122,7 @@ class ImovelDetalhePage extends ConsumerWidget {
     final estado = TextEditingController(text: imovel.endereco?.estado ?? '');
     final cep = TextEditingController(text: imovel.endereco?.cep ?? '');
     final bairro = TextEditingController(text: imovel.endereco?.bairro ?? '');
+    final cepKey = GlobalKey<CepFieldState>();
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -120,18 +131,33 @@ class ImovelDetalhePage extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              CepField(
+                key: cepKey,
+                cep: cep,
+                rua: rua,
+                bairro: bairro,
+                cidade: cidade,
+                estado: estado,
+                numero: numero,
+              ),
               TextField(controller: rua, decoration: const InputDecoration(labelText: 'Rua')),
               TextField(controller: numero, decoration: const InputDecoration(labelText: 'Número')),
               TextField(controller: bairro, decoration: const InputDecoration(labelText: 'Bairro')),
               TextField(controller: cidade, decoration: const InputDecoration(labelText: 'Cidade')),
               TextField(controller: estado, decoration: const InputDecoration(labelText: 'UF')),
-              TextField(controller: cep, decoration: const InputDecoration(labelText: 'CEP')),
             ],
           ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salvar')),
+          FilledButton(
+            onPressed: () async {
+              final cepOk = await cepKey.currentState?.garantir() ?? false;
+              if (!cepOk || !ctx.mounted) return;
+              Navigator.pop(ctx, true);
+            },
+            child: const Text('Salvar'),
+          ),
         ],
       ),
     );

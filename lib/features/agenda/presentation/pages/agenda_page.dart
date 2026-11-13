@@ -6,6 +6,7 @@ import '../../../../app/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/endereco_mapa.dart';
 import '../../../checklist/domain/checklist_models.dart';
 import '../providers/agenda_filtro.dart';
 import '../providers/agenda_providers.dart';
@@ -245,6 +246,9 @@ class _AgendaTile extends StatelessWidget {
         title: imovel?.nomeExibicao ?? 'Contrato ${shortId(item.contrato.id)}',
         subtitle: detalhes,
         trailing: StatusChip(status: ck.status),
+        footer: imovel?.endereco != null && imovel!.endereco!.temLocalizacao
+            ? LocalizacaoPainel(endereco: imovel.endereco!)
+            : null,
         leading: CircleAvatar(
           backgroundColor:
               Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),

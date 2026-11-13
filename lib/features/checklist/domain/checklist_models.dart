@@ -39,6 +39,14 @@ class Endereco extends Equatable {
     return parts.isEmpty ? 'Endereço não informado' : parts.join(', ');
   }
 
+  bool get temLocalizacao {
+    if (latitude != null && longitude != null) return true;
+    if (cep != null && cep!.trim().isNotEmpty) return true;
+    if (cidade != null && cidade!.trim().isNotEmpty) return true;
+    if (rua != null && rua!.trim().isNotEmpty) return true;
+    return false;
+  }
+
   factory Endereco.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const Endereco();
     return Endereco(

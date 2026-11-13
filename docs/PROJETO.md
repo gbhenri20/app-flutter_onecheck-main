@@ -5,7 +5,7 @@ O OneCheck registra vistorias de imóveis alugados. O locatário acompanha o pr�
 O sistema tem duas partes:
 
 - Aplicativo Flutter, neste repositório.
-- API REST em Python (FastAPI), publicada em `https://isg022-one-check-api-python.onrender.com`.
+- API REST em Python (FastAPI), publicada em `https://onecheck-api-srgh.onrender.com`.
 
 O aplicativo não decide sozinho se uma operação é permitida. Ele esconde rotas e botões. A API responde `403` quando o papel ou o vínculo não autoriza a consulta.
 
@@ -14,13 +14,13 @@ O aplicativo não decide sozinho se uma operação é permitida. Ele esconde rot
 O arquivo `assets/env/app_config.json` usa:
 
 ```json
-"apiBaseUrl": "https://isg022-one-check-api-python.onrender.com",
+"apiBaseUrl": "https://onecheck-api-srgh.onrender.com",
 "apiPrefix": "/api/v1"
 ```
 
-O cliente HTTP junta os dois e chama, por exemplo, `https://isg022-one-check-api-python.onrender.com/api/v1/auth/login`. A URL base não leva barra no final nem o prefixo `/api/v1`.
+O cliente HTTP junta os dois e chama, por exemplo, `https://onecheck-api-srgh.onrender.com/api/v1/auth/login`. A URL base não leva barra no final nem o prefixo `/api/v1`.
 
-O Swagger da API publicada fica em `https://isg022-one-check-api-python.onrender.com/docs`.
+O Swagger da API publicada fica em `https://onecheck-api-srgh.onrender.com/docs`.
 
 Uma API rodando na própria máquina pode usar `http://127.0.0.1:8765`. O emulador web do FlutLab não alcança esse endereço.
 

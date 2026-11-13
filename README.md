@@ -9,7 +9,7 @@ Aplicativo Flutter para vistorias imobiliárias, integrado à API REST OneCheck.
 
 ## Configuração da URL da API
 
-A API publicada é `https://isg022-one-check-api-python.onrender.com`. Esse endereço já está em `assets/env/app_config.json`, sem a barra no final e sem o prefixo `/api/v1`. O aplicativo acrescenta o prefixo sozinho.
+A API publicada é `https://onecheck-api-srgh.onrender.com`. Esse endereço já está em `assets/env/app_config.json`, sem a barra no final e sem o prefixo `/api/v1`. O aplicativo acrescenta o prefixo sozinho.
 
 ## Instalação
 
@@ -26,10 +26,13 @@ As contas abaixo existem apenas no seed de desenvolvimento da API. Não use essa
 
 | Perfil | E-mail | Senha | MFA |
 | --- | --- | --- | --- |
-| Admin | `admin@onecheck.local` | `admin123` | Sim |
-| Gestor | `gestor@onecheck.local` | `gestor123` | Sim |
-| Vistoriador | `vistoriador@onecheck.local` | `vistor123` | Sim |
-| Locatário | `locatario@onecheck.local` | `locat123` | Não |
+| Admin | `admin@onecheck.local` | `hKQmPva_tEquwlqiXtMlSg` | Sim |
+| Gestor | `gestor@onecheck.local` | `k3P6sVl1Bg90mKbj92AyjQ` | Sim |
+| Vistoriador | `vistoriador@onecheck.local` | `L_HmDAt0AJMS37kwfqLP-A` | Sim |
+| Vistoriadora | `ana.vistoriadora@onecheck.local` | `lX49D-3SLrS4adgpSfPkAw` | Sim |
+| Locatário | `locatario@onecheck.local` | `sy2zJfWQNxZBkQswm5-_pg` | Não |
+| Locatário | `pedro.locatario@onecheck.local` | `tSbmXyuc5gXXaG5jvK4S0w` | Não |
+| Locatária | `julia.locatario@onecheck.local` | `T7NhXO_gx3bXYpawQ_DKQg` | Não |
 
 O segredo TOTP do seed de desenvolvimento é `JBSWY3DPEHPK3PXP`. A validação é sempre da API.
 
@@ -41,7 +44,7 @@ Edite um único arquivo:
 // assets/env/app_config.json
 {
   "environment": "development",
-  "apiBaseUrl": "https://isg022-one-check-api-python.onrender.com",
+  "apiBaseUrl": "https://onecheck-api-srgh.onrender.com",
   "apiPrefix": "/api/v1",
   ...
 }
@@ -49,7 +52,7 @@ Edite um único arquivo:
 
 | Ambiente | Exemplo `apiBaseUrl` |
 |----------|----------------------|
-| API publicada | `https://isg022-one-check-api-python.onrender.com` |
+| API publicada | `https://onecheck-api-srgh.onrender.com` |
 | Desenvolvimento local | `http://127.0.0.1:8765` |
 | Emulador Android → host | `http://10.0.2.2:8765` |
 | Dispositivo físico | IP da máquina na LAN |
@@ -79,16 +82,19 @@ pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8765
 ```
 
-Documentação Swagger da API publicada: `https://isg022-one-check-api-python.onrender.com/docs`
+Documentação Swagger da API publicada: `https://onecheck-api-srgh.onrender.com/docs`
 
 ## Contas de demonstração (seed da API)
 
 | Perfil | E-mail | Senha | MFA |
 |--------|--------|-------|-----|
-| Admin | `admin@onecheck.local` | `admin123` | Sim (TOTP) |
-| Gestor | `gestor@onecheck.local` | `gestor123` | Sim |
-| Vistoriador | `vistoriador@onecheck.local` | `vistor123` | Sim |
-| Locatário | `locatario@onecheck.local` | `locat123` | Não |
+| Admin | `admin@onecheck.local` | `hKQmPva_tEquwlqiXtMlSg` | Sim (TOTP) |
+| Gestor | `gestor@onecheck.local` | `k3P6sVl1Bg90mKbj92AyjQ` | Sim |
+| Vistoriador | `vistoriador@onecheck.local` | `L_HmDAt0AJMS37kwfqLP-A` | Sim |
+| Vistoriadora | `ana.vistoriadora@onecheck.local` | `lX49D-3SLrS4adgpSfPkAw` | Sim |
+| Locatário | `locatario@onecheck.local` | `sy2zJfWQNxZBkQswm5-_pg` | Não |
+| Locatário | `pedro.locatario@onecheck.local` | `tSbmXyuc5gXXaG5jvK4S0w` | Não |
+| Locatária | `julia.locatario@onecheck.local` | `T7NhXO_gx3bXYpawQ_DKQg` | Não |
 
 Segredo TOTP do seed (apenas ambiente de desenvolvimento): `JBSWY3DPEHPK3PXP`  
 (adicione no Google Authenticator / authenticator TOTP para gerar o código de 6 dígitos.)
