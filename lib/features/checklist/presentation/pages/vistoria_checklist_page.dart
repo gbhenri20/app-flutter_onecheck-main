@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import '../../../../app/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/foto_captura.dart';
 import '../../domain/checklist_models.dart';
 import '../providers/checklist_providers.dart';
 
@@ -25,6 +27,7 @@ class _VistoriaChecklistPageState
     extends ConsumerState<VistoriaChecklistPage> {
   int _comodoIndex = 0;
   bool _saving = false;
+  final Map<String, Uint8List> _previews = {};
 
   Future<void> _salvarItem({
     required Checklist checklist,
@@ -65,26 +68,25 @@ class _VistoriaChecklistPageState
     required ChecklistItem item,
     required ImageSource source,
   }) async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(source: source, imageQuality: 90);
-    if (file == null) return;
-    setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final foto = await capturarFoto(context, origem: source);
+    if (foto == null || !mounted) return;
+    setState(() {
+      _previews[item.id] = foto.bytes;
+      _saving = true;
+    });
     try {
-      final bytes = await file.readAsBytes();
       await ref.read(checklistRepositoryProvider).uploadFoto(
             checklistId: widget.checklistId,
             itemId: item.id,
             filePath: '',
-            bytes: bytes,
-            filename: file.name,
+            bytes: foto.bytes,
+            filename: foto.filename,
           );
       ref.invalidate(checklistDetailProvider(widget.checklistId));
+      messenger.showSnackBar(const SnackBar(content: Text('Foto anexada.')));
     } on AppException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -206,7 +208,7 @@ class _VistoriaChecklistPageState
                               observacao: obs,
                               existing: saved,
                             ),
-                            onCamera: saved == null || kIsWeb
+                            onCamera: saved == null
                                 ? null
                                 : () => _foto(
                                       item: saved,
@@ -218,9 +220,14 @@ class _VistoriaChecklistPageState
                                       item: saved,
                                       source: ImageSource.gallery,
                                     ),
-                            onDeleteFoto: saved == null || saved.fotos.isEmpty
+                            preview: saved == null ? null : _previews[saved.id],
+                            onDeleteFoto: saved == null ||
+                                    (saved.fotos.isEmpty &&
+                                        _previews[saved.id] == null)
                                 ? null
                                 : () async {
+                                    setState(() => _previews.remove(saved.id));
+                                    if (saved.fotos.isEmpty) return;
                                     final foto = saved.fotos.first;
                                     await ref
                                         .read(checklistRepositoryProvider)
@@ -257,6 +264,7 @@ class _ItemEditor extends StatefulWidget {
     this.onCamera,
     this.onGallery,
     this.onDeleteFoto,
+    this.preview,
   });
 
   final ItemVistoriaCatalogo catalogo;
@@ -265,6 +273,7 @@ class _ItemEditor extends StatefulWidget {
   final VoidCallback? onCamera;
   final VoidCallback? onGallery;
   final VoidCallback? onDeleteFoto;
+  final Uint8List? preview;
   final String apiBase;
 
   @override
@@ -348,29 +357,28 @@ class _ItemEditorState extends State<_ItemEditor> {
             ),
           ),
           const SizedBox(height: 8),
-          if (widget.existing?.fotos.isNotEmpty == true)
-            SizedBox(
-              height: 72,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: widget.existing!.fotos
-                    .map(
-                      (f) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            _resolveUrl(f.url),
-                            width: 72,
-                            height: 72,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.broken_image),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+          if (widget.preview != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                widget.preview!,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            )
+          else if (widget.existing?.fotos.isNotEmpty == true)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                _resolveUrl(widget.existing!.fotos.first.url),
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(
+                  height: 180,
+                  child: Center(child: Icon(Icons.broken_image_outlined)),
+                ),
               ),
             ),
           Row(
