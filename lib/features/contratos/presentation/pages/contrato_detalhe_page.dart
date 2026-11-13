@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/providers.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/files/file_saver.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../checklist/domain/checklist_models.dart';
 import '../../../usuarios/domain/usuario_operacional.dart';
+import '../../data/contrato_pdf.dart';
 
 class ContratoDetalhePage extends ConsumerWidget {
   const ContratoDetalhePage({super.key, required this.contratoId});
@@ -39,6 +41,12 @@ class ContratoDetalhePage extends ConsumerWidget {
                   '${formatDate(contrato.dataInicio)} — ${formatDate(contrato.dataFim)}\n'
                   'Imóvel ${shortId(contrato.imovelId)} · Locatário ${shortId(contrato.locatarioId)}'
                   '${contrato.valorMensal != null ? '\nR\$ ${contrato.valorMensal!.toStringAsFixed(2)}' : ''}',
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => _baixarDocumento(context, ref, contrato),
+              icon: const Icon(Icons.picture_as_pdf_outlined),
+              label: const Text('Baixar contrato'),
             ),
             if (canManage && contrato.status == 'ativo') ...[
               const SizedBox(height: 12),
@@ -173,6 +181,108 @@ class ContratoDetalhePage extends ConsumerWidget {
       for (final item in items)
         if (tipo == null || item.tipo == tipo) item,
     ];
+  }
+
+  Future<void> _baixarDocumento(
+    BuildContext context,
+    WidgetRef ref,
+    Contrato contrato,
+  ) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 12),
+                Text('Gerando contrato...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final imovel = await ref.read(imoveisRepositoryProvider).obter(contrato.imovelId);
+      final locatario = await _locatario(ref, contrato.locatarioId);
+      final bytes = await gerarContratoPdf(
+        DadosContratoDocumento(
+          numero: contrato.id,
+          status: contrato.status,
+          nomeLocatario: locatario.nome,
+          cpfLocatario: locatario.cpf,
+          imovelNome: imovel.nomeExibicao,
+          imovelTipo: imovel.tipo,
+          imovelTamanho: imovel.tamanho,
+          garagem: imovel.garagem,
+          garagemVagas: imovel.garagemVagas,
+          endereco: imovel.endereco,
+          dataInicio: contrato.dataInicio,
+          dataFim: contrato.dataFim,
+          valorMensal: contrato.valorMensal,
+          emitidoEm: DateTime.now(),
+        ),
+      );
+      final prefixo = contrato.id.length <= 8 ? contrato.id : contrato.id.substring(0, 8);
+      await saveBytes(
+        bytes: bytes,
+        filename: 'contrato-$prefixo.pdf',
+        mimeType: 'application/pdf',
+      );
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contrato baixado.')),
+        );
+      }
+    } on AppException catch (e) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível gerar o contrato.')),
+        );
+      }
+    }
+  }
+
+  Future<({String nome, String? cpf})> _locatario(WidgetRef ref, String id) async {
+    var nome = 'Locatário do contrato';
+    String? cpf;
+    try {
+      final repo = ref.read(usuariosRepositoryProvider);
+      for (var pagina = 1; pagina <= 5; pagina++) {
+        final page = await repo.listarOperacionais(
+          pagina: pagina,
+          porPagina: 100,
+          role: 'locatario',
+        );
+        for (final usuario in page.items) {
+          if (usuario.id == id && usuario.nome.trim().isNotEmpty) {
+            nome = usuario.nome.trim();
+          }
+        }
+        if (!page.hasMore) break;
+      }
+      if (ref.read(authStateProvider).user?.isAdmin == true) {
+        final completo = await repo.obter(id);
+        if (completo.nome.trim().isNotEmpty) nome = completo.nome.trim();
+        cpf = completo.cpf;
+      }
+    } on AppException {
+      // O PDF segue com o nome que já tiver sido encontrado.
+    }
+    return (nome: nome, cpf: cpf);
   }
 
   Future<void> _acao(BuildContext context, WidgetRef ref, {required bool encerrar}) async {
