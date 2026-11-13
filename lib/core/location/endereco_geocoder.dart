@@ -71,7 +71,7 @@ class EnderecoGeocoder {
     if (_cache.containsKey(chave)) return Future.value(salvo);
 
     final pendente = _fila.then((_) => _resolver(chave, endereco));
-    _fila = pendente.then((_) {}, onError: (_, _) {});
+    _fila = pendente.then((_) {}, onError: (erro, detalhe) {});
     return pendente;
   }
 

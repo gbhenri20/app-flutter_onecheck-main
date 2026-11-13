@@ -53,7 +53,7 @@ class CepConferenciaBadge extends ConsumerWidget {
         cor: AppTheme.brandMuted,
         icone: Icons.hourglass_top,
       ),
-      error: (_, _) => const _FaixaCep(
+      error: (erro, detalhe) => const _FaixaCep(
         texto: 'ViaCEP indisponível',
         cor: AppTheme.brandMuted,
         icone: Icons.cloud_off_outlined,
@@ -154,7 +154,7 @@ class EnderecoMapa extends ConsumerWidget {
         altura: altura,
         child: const CircularProgressIndicator(),
       ),
-      error: (_, _) => _MapaCaixa(
+      error: (erro, detalhe) => _MapaCaixa(
         altura: altura,
         child: const Text('Não foi possível carregar o mapa'),
       ),
@@ -234,9 +234,9 @@ class _MapaBase extends StatelessWidget {
       ),
       children: [
         TileLayer(
-          urlTemplate:
-              'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'one_check',
+          maxNativeZoom: 19,
         ),
         MarkerLayer(
           markers: [
@@ -260,7 +260,7 @@ class _MapaBase extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: Text(
-                '© OpenStreetMap © CARTO',
+                '© OpenStreetMap',
                 style: TextStyle(fontSize: 9, color: Colors.black87),
               ),
             ),
